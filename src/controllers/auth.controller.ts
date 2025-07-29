@@ -10,7 +10,7 @@ const userRepo = AppDataSource.getRepository(User);
 
 export const register = async (req: Request, res: Response) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: "Name, email, and password are required" });
@@ -18,17 +18,27 @@ export const register = async (req: Request, res: Response) => {
 
         const existingUser = await userRepo.findOne({ where: { email } });
 
-        if (existingUser) return res.status(400).json({ message: "Email already registered" });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already registered" });
+        }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = userRepo.create({ name, email, password: hashedPassword });
+
+        const user = userRepo.create({
+            name,
+            email,
+            password: hashedPassword,
+            role: role === "admin" ? "admin" : "user" // force default to "user" if not explicitly "admin"
+        });
+
         await userRepo.save(user);
 
-        res.status(201).json({ message: "User registered successfully" });
+        res.status(201).json({ message: "User registered successfully", role: user.role });
     } catch (err) {
         res.status(500).json({ error: "Registration failed", details: err });
     }
 };
+
 
 
 export const login = async (req: Request, res: Response) => {
@@ -41,9 +51,12 @@ export const login = async (req: Request, res: Response) => {
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) return res.status(400).json({ message: "Invalid credentials" });
 
-        const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET as string, {
-            expiresIn: "1h",
-        });
+        // ✅ Include role in the JWT payload
+        const token = jwt.sign(
+            { userId: user.id, role: user.role },
+            process.env.JWT_SECRET as string,
+            { expiresIn: "1h" }
+        );
 
         res.json({ token });
     } catch (err) {

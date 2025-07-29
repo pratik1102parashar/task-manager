@@ -5,10 +5,16 @@ import { AppDataSource } from "./config/data-source";
 import authRoutes from "./routes/auth.routes";
 import taskRoutes from "./routes/task.routes";
 
+
 dotenv.config();
+
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+app.get("/health", (_req, res) => {
+    res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
+});
 
 app.use(express.json());
 app.use("/api/auth", authRoutes);
