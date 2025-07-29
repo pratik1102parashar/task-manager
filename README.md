@@ -122,4 +122,3 @@ docker compose up --build
 ## 📬 Contact
 
 Built by **Pratik Parashar**
-📧 [your.email@example.com](mailto:your.email@example.com)
