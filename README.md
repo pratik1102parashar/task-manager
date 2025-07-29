@@ -94,13 +94,7 @@ Health Check: [http://localhost:3000/health](http://localhost:3000/health)
 * **Environment-based config**: Cloud-ready with `.env` support.
 * **Docker**: Ensures consistent local development and production parity.
 
----
 
-## 📄 API Documentation
-
-OpenAPI (OAS3) spec will be available in `docs/` (or integrate Swagger later).
-
----
 
 ## 🐳 Useful Docker Commands
 
