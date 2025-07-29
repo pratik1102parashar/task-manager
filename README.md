@@ -47,7 +47,7 @@ PORT=3000
 DB_HOST=db
 DB_PORT=3306
 DB_USERNAME=root
-DB_PASSWORD=Pratik@25
+DB_PASSWORD=Pratik@25(can be change as  yours)
 DB_NAME=task_manager_db
 
 JWT_SECRET=pppratik
