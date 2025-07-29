@@ -111,13 +111,7 @@ docker compose down -v
 docker compose up --build
 ```
 
----
 
-## ⚠️ Not Implemented
-
-* 💪 Basic Integration/API Test (e.g. with supertest)
-
----
 
 ## 📬 Contact
 
