@@ -7,17 +7,13 @@ import {
     deleteTask,
 } from "../controllers/task.controller";
 import { authenticate } from "../middlewares/auth.middleware";
-
-console.log("🛣️ task.routes.ts is loaded");
+import { adminMiddleware } from "../middlewares/admin.middleware";
 
 const router = Router();
 
 
-router.get("/test", (req, res) => {
-    console.log("🚀 Test route hit");
-    res.json({ message: "Task test working" });
-});
-// ✅ Logging middlewares
+
+// Logging middleware (optional)
 router.use((req, res, next) => {
     console.log("💡 Task route hit:", req.method, req.url);
     next();
@@ -26,13 +22,23 @@ router.use((req, res, next) => {
     console.log("🔐 Checking token...");
     next();
 });
-// Protect all routes with auth middleware if needed
+
+// 🔐 Apply authentication to all routes
 router.use(authenticate);
 
+// 👥 Authenticated users (admin or user)
 router.post("/", createTask);
+
+// ✅ Allow both users and admins to access, controller handles role filtering
 router.get("/", getTasks);
+
+// 📄 Anyone authenticated can fetch a specific task
 router.get("/:id", getTaskById);
+
+// ✏️ Anyone authenticated can update their own task
 router.put("/:id", updateTask);
-router.delete("/:id", deleteTask);
+
+// ❌ Only admin can delete any task
+router.delete("/:id", adminMiddleware, deleteTask);
 
 export default router;

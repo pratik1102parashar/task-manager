@@ -1,3 +1,4 @@
+// auth.middleware.ts
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../entities/user.entity";
@@ -5,9 +6,8 @@ import { User } from "../entities/user.entity";
 import dotenv from "dotenv";
 dotenv.config();
 
-
-interface AuthRequest extends Request {
-    user?: Partial<User>;
+export interface AuthRequest extends Request {
+    user?: Partial<User>; // ✅ Exported now
 }
 
 if (!process.env.JWT_SECRET) {
@@ -18,10 +18,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
 
-    console.log("🧾 Authorization Header:", authHeader);
-
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        console.log("❌ No Bearer token provided");
         return res.status(401).json({ message: "Unauthorized - No token" });
     }
 
@@ -29,13 +26,12 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as jwt.JwtPayload;
-        console.log("✅ Token verified. Payload:", decoded);
-
-        // Safely attach user
-        req.user = { id: decoded.userId }; // Only attach what you need
+        req.user = {
+            id: decoded.userId,
+            role: decoded.role
+        }
         next();
     } catch (error) {
-        console.error("❌ Token verification failed:", error);
         return res.status(401).json({ message: "Invalid or expired token" });
     }
 };

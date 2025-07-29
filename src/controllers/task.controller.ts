@@ -2,62 +2,107 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../config/data-source";
 import { Task } from "../entities/task.entity";
 import { User } from "../entities/user.entity";
-import { IsNull } from "typeorm";
 
+// Extend Request to include authenticated user
 interface AuthRequest extends Request {
     user?: Partial<User>;
 }
 
 const taskRepo = AppDataSource.getRepository(Task);
-const userRepo = AppDataSource.getRepository(User);
 
+// Create a new task
 export const createTask = async (req: AuthRequest, res: Response) => {
-    console.log("Hit create task route");
-
-    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
-
     try {
-        const { title } = req.body;
-        if (!title || typeof title !== 'string' || !title.trim()) {
-            return res.status(400).json({ message: "Title is required and must be a non-empty string." });
-        }
+        const { title, description } = req.body;
 
-        const user = await userRepo.findOne({ where: { id: req.user.id } });
-        if (!user) return res.status(404).json({ message: "User not found" });
+        const task = taskRepo.create({
+            title,
+            description,
+            user: { id: req.user!.id }, // Set user relationship
+        });
 
-        const task = taskRepo.create({ title: title.trim(), user });
         const savedTask = await taskRepo.save(task);
-
         return res.status(201).json(savedTask);
     } catch (err) {
-        console.error("Failed to create task:", err);
+        console.error("Error creating task:", err);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
 
-export const getTasks = async (req: AuthRequest, res: Response) => {
-    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+// Get all tasks for user or all if admin
+// export const getTasks = async (req: AuthRequest, res: Response) => {
+//     try {
+//         const qb = taskRepo
+//             .createQueryBuilder("task")
+//             .leftJoinAndSelect("task.user", "user")
+//             .where("task.isDeleted = false");
 
+//         // ✅ TS-safe check
+//         if (req.user && req.user.role !== "admin") {
+//             qb.andWhere("task.userId = :userId", { userId: req.user.id });
+//         }
+
+//         const tasks = await qb.orderBy("task.createdAt", "DESC").getMany();
+//         return res.json(tasks);
+//     } catch (err) {
+//         console.error("❌ Error in getTasks:", err);
+//         return res.status(500).json({ message: "Internal server error" });
+//     }
+// };
+
+
+// export const getTasks = async (req: AuthRequest, res: Response) => {
+//     try {
+//         const tasks = await taskRepo
+//             .createQueryBuilder("task")
+//             .leftJoinAndSelect("task.user", "user")
+//             .where("task.isDeleted = false")
+//             .orderBy("task.createdAt", "DESC")
+//             .getMany();
+
+//         return res.json(tasks);
+//     } catch (err) {
+//         console.error("Error fetching all tasks:", err);
+//         return res.status(500).json({ message: "Internal server error." });
+//     }
+// };
+export const getTasks = async (req: AuthRequest, res: Response) => {
     try {
-        const tasks = await taskRepo.find({
-            where: { user: { id: req.user.id }, deletedAt: IsNull() },
-            order: { createdAt: "DESC" },
-        });
+        console.log("Authenticated user:", req.user); // 👈 Add this
+
+        const qb = taskRepo
+            .createQueryBuilder("task")
+            .leftJoinAndSelect("task.user", "user")
+            .where("task.isDeleted = false");
+
+        if (req.user?.role !== "admin") {
+            qb.andWhere("user.id = :userId", { userId: req.user?.id });
+        }
+
+        const tasks = await qb.orderBy("task.createdAt", "DESC").getMany();
+
         return res.json(tasks);
     } catch (err) {
-        console.error("Failed to fetch tasks:", err);
+        console.error("Error fetching tasks:", err);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
+
+
+
+
+
+
+// Get task by ID
 export const getTaskById = async (req: AuthRequest, res: Response) => {
-    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+    const { id } = req.params;
 
     try {
-        const { id } = req.params;
+        const whereClause = req.user?.role === "admin"
+            ? { id: parseInt(id), isDeleted: false }
+            : { id: parseInt(id), user: { id: req.user!.id }, isDeleted: false };
 
-        const task = await taskRepo.findOne({
-            where: { id: parseInt(id), user: { id: req.user.id }, deletedAt: IsNull() },
-        });
+        const task = await taskRepo.findOne({ where: whereClause });
 
         if (!task) {
             return res.status(404).json({ message: "Task not found" });
@@ -65,63 +110,82 @@ export const getTaskById = async (req: AuthRequest, res: Response) => {
 
         return res.json(task);
     } catch (err) {
-        console.error("Failed to fetch task by ID:", err);
+        console.error("Error fetching task:", err);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
 
-
+// Update task
 export const updateTask = async (req: AuthRequest, res: Response) => {
-    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+    const { id } = req.params;
 
     try {
-        const { id } = req.params;
-        const { title, completed } = req.body;
+        const whereClause = req.user?.role === "admin"
+            ? { id: parseInt(id), isDeleted: false }
+            : { id: parseInt(id), user: { id: req.user!.id }, isDeleted: false };
 
-        const task = await taskRepo.findOne({
-            where: { id: parseInt(id), user: { id: req.user.id }, deletedAt: IsNull() },
-        });
-        if (!task) return res.status(404).json({ message: "Task not found" });
+        const task = await taskRepo.findOne({ where: whereClause });
 
-        if (title !== undefined) {
-            if (typeof title !== 'string' || !title.trim()) {
-                return res.status(400).json({ message: "Title must be a non-empty string when provided." });
-            }
-            task.title = title.trim();
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
         }
 
-        if (completed !== undefined) {
-            if (typeof completed !== "boolean") {
-                return res.status(400).json({ message: "Completed must be a boolean when provided." });
-            }
-            task.completed = completed;
-        }
-
+        taskRepo.merge(task, req.body);
         const updatedTask = await taskRepo.save(task);
+
         return res.json(updatedTask);
     } catch (err) {
-        console.error("Failed to update task:", err);
+        console.error("Error updating task:", err);
         return res.status(500).json({ message: "Internal server error." });
     }
 };
 
+// Soft delete task
 export const deleteTask = async (req: AuthRequest, res: Response) => {
-    if (!req.user) return res.status(401).json({ message: "Unauthorized" });
+    const { id } = req.params;
 
     try {
-        const { id } = req.params;
+        const whereClause = req.user?.role === "admin"
+            ? { id: parseInt(id), isDeleted: false }
+            : { id: parseInt(id), user: { id: req.user!.id }, isDeleted: false };
 
-        const task = await taskRepo.findOne({
-            where: { id: parseInt(id), user: { id: req.user.id }, deletedAt: IsNull() },
-        });
-        if (!task) return res.status(404).json({ message: "Task not found" });
+        const task = await taskRepo.findOne({ where: whereClause });
 
-        task.deletedAt = new Date();
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        task.isDeleted = true;
         await taskRepo.save(task);
 
-        return res.status(204).send(); // No Content on success
+        return res.json({ message: "Task soft-deleted successfully" });
     } catch (err) {
-        console.error("Failed to delete task:", err);
+        console.error("Error deleting task:", err);
+        return res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+// Restore soft-deleted task (admin and owner only)
+export const restoreTask = async (req: AuthRequest, res: Response) => {
+    const { id } = req.params;
+
+    try {
+        const whereClause = req.user?.role === "admin"
+            ? { id: parseInt(id), isDeleted: true }
+            : { id: parseInt(id), user: { id: req.user!.id }, isDeleted: true };
+
+        const task = await taskRepo.findOne({ where: whereClause });
+
+        if (!task) {
+            return res.status(404).json({ message: "Task not found or not deleted" });
+        }
+
+        task.isDeleted = false;
+        await taskRepo.save(task);
+
+        return res.json({ message: "Task restored successfully" });
+    } catch (err) {
+        console.error("Error restoring task:", err);
         return res.status(500).json({ message: "Internal server error." });
     }
 };

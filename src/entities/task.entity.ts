@@ -5,7 +5,6 @@ import {
     ManyToOne,
     CreateDateColumn,
     UpdateDateColumn,
-    DeleteDateColumn,
 } from "typeorm";
 import { User } from "./user.entity";
 
@@ -17,10 +16,16 @@ export class Task {
     @Column()
     title!: string;
 
+    @Column({ nullable: true })
+    description?: string; // ✅ Add this if you want descriptions
+
     @Column({ default: false })
     completed!: boolean;
 
-    @ManyToOne(() => User, (user) => user.tasks)
+    @Column({ default: false })
+    isDeleted!: boolean;
+
+    @ManyToOne(() => User, (user) => user.tasks, { eager: false })
     user!: User;
 
     @CreateDateColumn()
@@ -28,7 +33,4 @@ export class Task {
 
     @UpdateDateColumn()
     updatedAt!: Date;
-
-    @DeleteDateColumn({ nullable: true }) // <--- Add this line
-    deletedAt?: Date;
 }
