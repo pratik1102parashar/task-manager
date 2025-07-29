@@ -25,6 +25,7 @@ A simple, secure, and containerized backend REST API built with **TypeScript**, 
 * ✅ Liveness Check: `/health`
 * ⚖️ Configurable via `.env`
 * 🐳 Dockerized (App + MySQL)
+* ✅ Integration Test: /health route tested with Jest & Supertest
 
 ---
 
