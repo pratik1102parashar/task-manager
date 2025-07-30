@@ -51,7 +51,7 @@ export const login = async (req: Request, res: Response) => {
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) return res.status(400).json({ message: "Invalid credentials" });
 
-        // ✅ Include role in the JWT payload
+        // Include role in the JWT payload
         const token = jwt.sign(
             { userId: user.id, role: user.role },
             process.env.JWT_SECRET as string,

@@ -7,11 +7,11 @@ cmd="$@"
 host=$(echo "$host_with_port" | cut -d: -f1)
 port=$(echo "$host_with_port" | cut -d: -f2)
 
-echo "⏳ Waiting for $host:$port..."
+echo "waiting for $host:$port..."
 
 while ! nc -z "$host" "$port"; do
   sleep 1
 done
 
-echo "✅ $host:$port is available — starting app"
+echo "$host:$port is available — starting app"
 exec "$@"

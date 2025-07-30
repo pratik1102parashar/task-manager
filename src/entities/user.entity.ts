@@ -24,8 +24,8 @@ export class User {
     @Column()
     password!: string;
 
-    @Column({ default: "user" })  // 👈 Add this
-    role!: "user" | "admin";      // 👈 Add this
+    @Column({ default: "user" })
+    role!: "user" | "admin";
 
     @OneToMany(() => Task, (task) => task.user)
     tasks!: Task[];

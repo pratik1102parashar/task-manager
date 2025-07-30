@@ -6,7 +6,7 @@ services:
     container_name: taskmanager-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: Pratik@25
+      MYSQL_ROOT_PASSWORD: Pratik@25  
       MYSQL_DATABASE: task_manager_db
     ports:
       - "4306:3306"  # changed host port to avoid conflict

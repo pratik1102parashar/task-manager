@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { AuthRequest } from "./auth.middleware"; // if needed, export AuthRequest
+import { AuthRequest } from "./auth.middleware";
 
 export const adminMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
     if (req.user?.role !== "admin") {

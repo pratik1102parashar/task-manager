@@ -3,9 +3,7 @@ import { DataSource } from "typeorm";
 import entities from "../entities";
 import dotenv from "dotenv";
 dotenv.config();
-// Resolve DB host dynamically
-// const isDev = process.env.NODE_ENV === "development";
-// const host = isDev ? "localhost" : process.env.DB_HOST || "db";
+
 
 const host = process.env.DB_HOST || "localhost";
 

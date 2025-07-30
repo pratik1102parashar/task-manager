@@ -17,7 +17,7 @@ export class Task {
     title!: string;
 
     @Column({ nullable: true })
-    description?: string; // ✅ Add this if you want descriptions
+    description?: string;
 
     @Column({ default: false })
     completed!: boolean;

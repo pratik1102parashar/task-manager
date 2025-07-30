@@ -29,43 +29,7 @@ export const createTask = async (req: AuthRequest, res: Response) => {
     }
 };
 
-// Get all tasks for user or all if admin
-// export const getTasks = async (req: AuthRequest, res: Response) => {
-//     try {
-//         const qb = taskRepo
-//             .createQueryBuilder("task")
-//             .leftJoinAndSelect("task.user", "user")
-//             .where("task.isDeleted = false");
 
-//         // ✅ TS-safe check
-//         if (req.user && req.user.role !== "admin") {
-//             qb.andWhere("task.userId = :userId", { userId: req.user.id });
-//         }
-
-//         const tasks = await qb.orderBy("task.createdAt", "DESC").getMany();
-//         return res.json(tasks);
-//     } catch (err) {
-//         console.error("❌ Error in getTasks:", err);
-//         return res.status(500).json({ message: "Internal server error" });
-//     }
-// };
-
-
-// export const getTasks = async (req: AuthRequest, res: Response) => {
-//     try {
-//         const tasks = await taskRepo
-//             .createQueryBuilder("task")
-//             .leftJoinAndSelect("task.user", "user")
-//             .where("task.isDeleted = false")
-//             .orderBy("task.createdAt", "DESC")
-//             .getMany();
-
-//         return res.json(tasks);
-//     } catch (err) {
-//         console.error("Error fetching all tasks:", err);
-//         return res.status(500).json({ message: "Internal server error." });
-//     }
-// };
 export const getTasks = async (req: AuthRequest, res: Response) => {
     try {
         console.log("Authenticated user:", req.user); // 👈 Add this

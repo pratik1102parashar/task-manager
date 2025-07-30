@@ -2,7 +2,7 @@ FROM node:18
 
 WORKDIR /app
 
-# ✅ Fix: install netcat-openbsd (not virtual 'netcat' package)
+#install netcat-openbsd (not virtual 'netcat' package)
 RUN apt-get update && apt-get install -y netcat-openbsd
 
 COPY package*.json ./

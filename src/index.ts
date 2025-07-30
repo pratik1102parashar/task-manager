@@ -22,9 +22,9 @@ app.use("/api/tasks", taskRoutes);
 
 AppDataSource.initialize()
     .then(() => {
-        console.log("📦 Dataasdasbase connected");
+        console.log("Dataasdasbase connected");
         app.listen(PORT, () => {
-            console.log(`🚀 Server started on http://localhost:${PORT}`);
+            console.log(`Server started on http://localhost:${PORT}`);
         });
     })
-    .catch((error) => console.error("❌ DB connection error:", error));
+    .catch((error) => console.error("DB connection error:", error));
