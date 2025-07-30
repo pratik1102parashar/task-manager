@@ -7,11 +7,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export interface AuthRequest extends Request {
-    user?: Partial<User>; // ✅ Exported now
+    user?: Partial<User>; //  Exported now
 }
 
 if (!process.env.JWT_SECRET) {
-    throw new Error("❌ JWT_SECRET not set in environment variables");
+    throw new Error(" JWT_SECRET not set in environment variables");
 }
 const JWT_SECRET = process.env.JWT_SECRET;
 

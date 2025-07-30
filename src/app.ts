@@ -5,8 +5,8 @@ import helmet from "helmet";
 import { json } from "body-parser";
 import authRoutes from "./routes/auth.routes";
 import taskRoutes from "./routes/task.routes";
-import { errorHandler } from "./middlewares/error.middleware";
-import { setupSwagger } from "./utils/swagger"; // If you're using Swagger
+
+import { setupSwagger } from "./utils/swagger";
 
 const app = express();
 
@@ -32,9 +32,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
 
 // Swagger (optional)
-setupSwagger(app); // Uncomment if implemented
+setupSwagger(app);
 
-// Error handling middleware (always after routes)
-app.use(errorHandler);
+
 
 export default app;
